@@ -1,4 +1,4 @@
-export function fibonacci(i: number): number {
+export function fibonacci(i: number): string {
   if (i < 0) {
     throw new Error("Cannot compute on negative numbers");
   }
