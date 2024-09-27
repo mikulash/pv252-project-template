@@ -1,7 +1,7 @@
 import UIkit from "uikit";
 import { initMenu } from "./menu.ts";
 import { initFactorialUi } from "./factorial.ts";
-import { initFibonacciUi } from "./fibonacci.ts";
+import { initFibonacciUi }    from "./fibonacci.ts";
 
 initMenu(document.querySelector<HTMLElement>(".main-menu")!, "menu-home");
 const site_a = document.querySelector<HTMLElement>("#site-a")!;
