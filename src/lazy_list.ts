@@ -84,26 +84,26 @@ export class LazyList<T> extends HTMLElement {
   }
 
   #onscroll() {
-    console.groupCollapsed("Scroll event");
+    // console.groupCollapsed("Scroll event");
     const totalItems = this.#data.length;
     const scrollTop = this.#listElement.scrollTop;
 
     const visibleStartIndex = Math.max(Math.floor(scrollTop / this.#itemHeight) - this.#bufferSize, 0);
-    console.log("Visible start index", visibleStartIndex);
+    // console.log("Visible start index", visibleStartIndex);
 
     const numVisibleItems =
       Math.ceil( this.#listElement.clientHeight /  this.#itemHeight) + this.#bufferSize;
-    console.log("Num visible items", numVisibleItems);
+    // console.log("Num visible items", numVisibleItems);
 
     const visibleEndIndex = Math.min(visibleStartIndex + numVisibleItems, totalItems);
-    console.log("Visible end index", visibleEndIndex);
+    // console.log("Visible end index", visibleEndIndex);
 
     this.#setOffsets(visibleStartIndex, visibleEndIndex);
 
     this.#removeExistingItems();
 
     this.#renderItems(visibleStartIndex, visibleEndIndex);
-    console.groupEnd();
+    // console.groupEnd();
   }
 
   #setOffsets(startIdx: number, endIdx: number) {
