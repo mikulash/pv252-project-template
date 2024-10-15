@@ -35,14 +35,8 @@ export class LazyList<T> extends HTMLElement {
     return element;
   };
 
-  // These could be useful properties to consider, but not mandatory to use.
-  // Similarly, feel free to edit the shadow DOM template in any way you want.
-
   // By default, the list is empty.
   #data: T[] = [];
-
-  // The index of the first visible data item.
-  #visiblePosition: number = 0;
 
   // The amount of space that needs to be shown before the first visible item.
   #topOffset: number = 0;
@@ -53,6 +47,8 @@ export class LazyList<T> extends HTMLElement {
 
   // The container that stores the spacer elements and the slot where items are inserted.
   #listElement: HTMLElement;
+  #bufferSize = 4;
+  #itemHeight=  350;
 
   static register() {
     customElements.define("lazy-list", LazyList);
@@ -73,20 +69,61 @@ export class LazyList<T> extends HTMLElement {
     this.#listElement = this.shadowRoot.querySelector<HTMLElement>("#list")!;
 
     this.#listElement.onscroll = () => {
-      console.log(this.#listElement.scrollTop);
+      this.#onscroll();
     };
-
-    // Remove this once you are actually showing some data in the list.
-    this.innerHTML = "<span> Some content </span>"
   }
 
   setData(data: T[]) {
     this.#data = data;
-    // TODO: Data changed, re-draw content.
+    this.#onscroll();
   }
 
   setRenderer(renderer: Renderer<T>) {
     this.#renderFunction = renderer;
-    // TODO: Renderer changed, re-draw content.
+    this.#onscroll();
+  }
+
+  #onscroll() {
+    console.groupCollapsed("Scroll event");
+    const totalItems = this.#data.length;
+    const scrollTop = this.#listElement.scrollTop;
+
+    const visibleStartIndex = Math.max(Math.floor(scrollTop / this.#itemHeight) - this.#bufferSize, 0);
+    console.log("Visible start index", visibleStartIndex);
+
+    const numVisibleItems =
+      Math.ceil( this.#listElement.clientHeight /  this.#itemHeight) + this.#bufferSize;
+    console.log("Num visible items", numVisibleItems);
+
+    const visibleEndIndex = Math.min(visibleStartIndex + numVisibleItems, totalItems);
+    console.log("Visible end index", visibleEndIndex);
+
+    this.#setOffsets(visibleStartIndex, visibleEndIndex);
+
+    this.#removeExistingItems();
+
+    this.#renderItems(visibleStartIndex, visibleEndIndex);
+    console.groupEnd();
+  }
+
+  #setOffsets(startIdx: number, endIdx: number) {
+    this.#topOffset = startIdx * this.#itemHeight;
+    this.#bottomOffset = (this.#data.length - endIdx) * this.#itemHeight;
+    this.#topOffsetElement.style.height = `${this.#topOffset}px`;
+    this.#bottomOffsetElement.style.height = `${this.#bottomOffset}px`;
+  }
+
+  #removeExistingItems() {
+    while (this.firstChild) {
+      this.removeChild(this.firstChild);
+    }
+  }
+
+  #renderItems(fromIdx: number, toIdx: number) {
+    for (let i = fromIdx; i < toIdx; i++) {
+      const item = this.#data[i];
+      const itemElement = this.#renderFunction(item);
+      this.appendChild(itemElement);
+    }
   }
 }
