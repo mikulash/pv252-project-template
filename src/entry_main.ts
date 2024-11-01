@@ -66,7 +66,6 @@ class PersonListItem {
     this.data = null;
     this.error = null;
   }
-
 }
 
 export const PeopleListContext = Context.create<PeopleListContext>("Counter");
@@ -109,7 +108,7 @@ export class PeopleListContextElement extends FASTElement implements PeopleListC
     // The "reactive" part is very important! It means that not only is the
     // list itself observable, but also that the individual objects in that
     // list will notify upon change any templates that use them.
-    let dummyData = [];
+    const dummyData = [];
     for (let i=0; i<ITEM_COUNT; i++) {
       dummyData.push(reactive(new PersonListItem()));
     }
@@ -121,7 +120,7 @@ export class PeopleListContextElement extends FASTElement implements PeopleListC
     // Provide this element as context to the child components.
     PeopleListContext.provide(this, this);
 
-    // This code simulates a long running "loading" script that
+    // This code simulates a long-running "loading" script that
     // populates the "people" array one by one.
     
     this.isLoading = true;
@@ -174,14 +173,61 @@ PeopleListContextElement.define({
 export class PersonElement extends FASTElement {
   // Some suggestions for properties you might want to use:
 
-  // @PeopleListContext context!: PeopleListContext;
+  @PeopleListContext context!: PeopleListContext;
 
-  // @attr position: number = 0;
+  @attr position: number = 0;
 
-  // @observable person: PersonListItem = new PersonListItem();
+  @observable person: PersonListItem = new PersonListItem();
+
+  connectedCallback(): void {
+    super.connectedCallback();
+    this.person = this.context.people[this.position];
+  }
+
+  refresh() {
+    this.context.refresh(this.position);
+  }
 }
 
-const personElementTemplate = html<PersonElement>``;
+const personElementTemplate = html<PersonElement>`
+
+      <!-- Show a card with the progress -->
+      <fluent-card style="padding: 16px; margin-bottom: 16px;">
+        <span style="display: block; margin-bottom: 8px;">Loaded ${x => x.position + 1}/20:</span>
+        <fluent-progress max="20" value="${x => x.position + 1}"></fluent-progress>
+      </fluent-card>
+
+      <!-- Person details or error message or loading -->
+      ${when(x => x.person?.isOk(), html`
+        <fluent-card style="padding: 16px; margin-bottom: 16px;">
+          <fluent-breadcrumb>
+            <fluent-breadcrumb-item>Continent</fluent-breadcrumb-item>
+            <fluent-breadcrumb-item>Country</fluent-breadcrumb-item>
+            <fluent-breadcrumb-item>City</fluent-breadcrumb-item>
+          </fluent-breadcrumb>
+          <h2 style="margin-top: 0px;">${x => x.person?.data?.name}</h2>
+          <fluent-divider role="separator"></fluent-divider>
+          <p>This person was born in ${x => x.person?.data?.birthyear} and is/was working as ${x => x.person?.data?.occupation} in the ${x => x.person?.data?.industry} industry.</p>
+          <fluent-divider role="separator" style="margin-bottom: 16px;"></fluent-divider>
+          <a href="https://maps.google.com" target="_blank"><fluent-button appearance="accent">Show on map</fluent-button></a>
+          <fluent-button appearance="outline" @click="${x => x.refresh()}">Refresh</fluent-button>
+        </fluent-card>
+      `)}
+
+      <!-- Error message  -->
+      ${when(x => x.person?.isError(), html`
+        <fluent-card style="padding: 16px; margin-bottom: 16px; height: 66px;">
+          <span style="display: inline-block; margin: 4px 16px 4px 16px;">Item failed to load.</span>
+          <fluent-button appearance="accent" style="float: left;" @click="${x => x.refresh()}">Refresh</fluent-button>
+        </fluent-card>
+      `)}
+
+      <!-- Loading  -->
+      ${when(x => x.person?.isLoading(), html`
+        <fluent-skeleton style="height: 66px; padding: 16px; box-sizing: border-box;" shape="rect" shimmer="true">Loading...</fluent-skeleton>
+      `)}
+   
+`;
 
 PersonElement.define({
   name: "person-item",
@@ -191,18 +237,27 @@ PersonElement.define({
 export class PeopleList extends FASTElement {
   // Probably will need to access the context state:
 
-  // @PeopleListContext data!: PeopleListContext;
+  @PeopleListContext data!: PeopleListContext;
 
   connectedCallback(): void {
     super.connectedCallback();
-
-    // This may be the place where you want to add child elements
-    // assuming they are not part of the template?
   }
 }
 
 const personListTemplate = html<PeopleList>`
-<div></div>`
+  <div class="uk-width-1-1" style="padding: 16px;">
+    <div class="box">
+  <div class="people-list">
+    <!-- Iterate through the people in the context and render a person-item for each -->
+    ${repeat(
+      x => PeopleListContext.get(x)?.people,
+      html<PeopleListContext>`
+        <person-item position="${(x, c) => c.index}"></person-item>
+      `
+    )}
+  </div>
+    </div>
+  </div>`
 
 PeopleList.define({
   name: "people-list",
