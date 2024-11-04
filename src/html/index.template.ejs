@@ -11,6 +11,9 @@
 
     <div class="uk-container">
       <div class="uk-grid-medium" uk-grid>
+
+        <!-- Basic usage example for the Microsoft Fluent UI components. -->
+
         <div class="uk-width-1-2" style="padding: 16px;">
           <div class="box" style="height: 300px;">
             <h2 class="box-header">Microsoft Fluent UI</h2>
@@ -30,8 +33,10 @@
               <fluent-button appearance="accent">Learn more</fluent-button>
             </a>
           </div>
-        </div>      
-    
+        </div>
+
+        <!-- Basic usage example for the context state API. -->
+
         <div class="uk-width-1-2" style="padding: 16px;">
           <div class="box" style="height: 300px;">
             <h2 class="box-header">Counter example</h2>
@@ -47,7 +52,29 @@
               <counter-down>Down</counter-down>        
             </counter-context>
           </div>
-        </div>      
+        </div>
+
+        <!-- Example of a "stateful" list that isn't using the context state pattern. -->
+
+        <div class="uk-width-1-2" style="padding: 16px;">
+          <div class="box">
+            <fluent-button appearance="accent" id="basic-add">Add</fluent-button>
+            <fluent-button appearance="accent" id="basic-remove" style="margin-bottom: 16px;">Remove</fluent-button>
+            <basic-checkbox-list items="5" id="basic-checkbox-list"></basic-checkbox-list>
+          </div>
+        </div>
+
+        <!-- Example of a "stateful" list that is using the context state pattern. -->
+
+        <div class="uk-width-1-2" style="padding: 16px;">
+          <div class="box">
+            <fluent-button appearance="accent" id="context-add">Add</fluent-button>
+            <fluent-button appearance="accent" id="context-remove" style="margin-bottom: 16px;">Remove</fluent-button>
+            <context-checkbox-list items="5" id="context-checkbox-list"></context-checkbox-list>
+          </div>
+        </div>
+
+        <!-- Some inspiration for displaying the elements of the person list. -->
 
         <div class="uk-width-1-1" style="padding: 16px;">
           <div class="box">
@@ -75,7 +102,7 @@
             <fluent-skeleton style="height: 66px; padding: 16px; box-sizing: border-box;" shape="rect" shimmer="true">Loading...</fluent-skeleton>
           </div>          
         </div>
-        
+
         <div class="uk-width-1-1" style="padding: 16px;">
           <div class="box">
             <people-context>

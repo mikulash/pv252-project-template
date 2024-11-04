@@ -11,3 +11,6 @@ coverage-total
 
 # macos temp files
 .DS_Store
+
+.idea
+dist

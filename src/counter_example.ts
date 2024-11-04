@@ -37,10 +37,7 @@ export class CounterContextElement extends FASTElement implements CounterContext
     // (Note that we can use this method anywhere where we have 
     // access to  a CounterContextElement, not just here.)
     Observable.getNotifier(this).subscribe(<Subscriber>{
-      handleChange(subject: any, _args: any): void {
-        // Here, "_args" would be the property that changed. But since we
-        // are only listening to changes in "count", we don't need to actually
-        // check it.
+      handleChange(subject): void {
         console.log(subject.count);
       }
     }, "count");

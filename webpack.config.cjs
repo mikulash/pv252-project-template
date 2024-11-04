@@ -8,7 +8,7 @@ module.exports = {
    */
   entry: {
     main: {
-      import: ["./src/entry_main.ts", "./src/counter_example.ts", "./src/css/entry_main.less", "uikit"],      
+      import: ["./src/entry_main.ts", "./src/counter_example.ts", "./src/list_examples.ts", "./src/css/entry_main.less", "uikit"],
     },
   },
   /*
