@@ -33,22 +33,62 @@ interface UpdateMessage {
 // Create a websocket connection. 
 // More info at https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API
 const socket = new WebSocket("ws:socket.zavazadlo.unsigned-short.com");
-socket.onmessage = (m) => {
-  console.log(m)
-}
+socket.onmessage = (event) => {
+  const message = JSON.parse(event.data);
 
-// Example of how to use the canvas element:
-let canvas = new SocketCanvasElement();
-canvas.width = 128;
-canvas.height = 128;
-canvas.ondraw = (x,y) => {
-  console.log(x,y);
-}
-document.querySelector("#container")!.appendChild(canvas);
-
-// We can only draw into canvas once it is actually shown, hence we postpose the draw operation.
-setTimeout(() => {
-  for (let x=0; x<128; x++) {
-    canvas.setPixel(x,x,true);
+  if (isWelcomeMessage(message)) {
+    initializeCanvas(message);
+  } else if (Array.isArray(message) && message.every(isUpdateMessage)) {
+    applyUpdates(message);
   }
-})
+};
+
+let canvas: SocketCanvasElement;
+
+function initializeCanvas(message: WelcomeMessage) {
+  canvas = new SocketCanvasElement();
+  canvas.width = message.x;
+  canvas.height = message.y;
+
+  document.querySelector("#container")!.appendChild(canvas);
+
+  setTimeout(() => {
+    for (let x = 0; x < message.x; x++) {
+      for (let y = 0; y < message.y; y++) {
+        const pixelIndex = y + x * message.y;
+        const pixelValue = message.data[pixelIndex];
+        canvas.setPixel(x, y, !!pixelValue);
+      }
+    }
+  }, 0);
+
+  canvas.ondraw = (x, y) => handleLocalDraw(x, y);
+}
+
+function handleLocalDraw(x: number, y: number) {
+  const value = !!canvas.context!.getImageData(x, y, 1, 1).data[0];
+  canvas.setPixel(x, y, value);
+
+  const update: UpdateMessage = {
+    point: { x, y },
+    value,
+  };
+
+  socket.send(JSON.stringify(update));
+}
+
+function applyUpdates(updates: UpdateMessage[]) {
+  for (const update of updates) {
+    canvas.setPixel(update.point.x, update.point.y, update.value);
+  }
+}
+
+function isWelcomeMessage(msg: any): msg is WelcomeMessage {
+  return msg && typeof msg.x === 'number' && typeof msg.y === 'number' && Array.isArray(msg.data);
+}
+
+function isUpdateMessage(msg: any): msg is UpdateMessage {
+  return msg && typeof msg.point === 'object' && typeof msg.value === 'boolean';
+}
+
+
